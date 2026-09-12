@@ -1,0 +1,921 @@
+<title>Navya Khanna</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#071a24;
+    --border:rgba(255,255,255,.14);
+    --ink:#eff8f9;
+    --ink-dim:#b3cbd1;
+    --muted:#7b9aa4;
+    --accent:#ff8f6b;
+    --accent-soft:rgba(255,143,107,.18);
+    --accent-2:#79e8cf;
+    --accent-3:#c3a4ff;
+    --lamp:#ffd39a;
+
+    --display:'Fraunces', Georgia, 'Iowan Old Style', serif;
+    --body:'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --sp-4:1.6rem; --sp-5:2.4rem; --sp-6:3.6rem; --sp-7:5.4rem;
+
+    --fs-eyebrow:.72rem;
+    --fs-hero:clamp(2.3rem,6.2vw,5rem);
+    --fs-h2:clamp(1.7rem,3.4vw,2.6rem);
+    --fs-lead:clamp(1.02rem,1.5vw,1.24rem);
+    --fs-body:1.05rem;
+    --fs-small:.85rem;
+
+    --car-w:400px;
+    --car-h:206px;
+
+    --ease:cubic-bezier(.22,.7,.3,1);
+    --halo:0 1px 22px rgba(3,14,22,.7);
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--bg);overflow-x:clip;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--body);font-size:var(--fs-body);line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--display);font-weight:560;margin:0;text-wrap:balance;}
+  p{margin:0;}
+  a{color:inherit;}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;}
+  ::selection{background:var(--accent-soft);color:var(--ink);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px;}
+
+  /* ---------- background stack ---------- */
+  #bgCanvas{position:fixed;inset:0;z-index:0;display:block;pointer-events:none;}
+  .scrim{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(ellipse 130% 85% at 50% 45%, rgba(4,17,26,0) 0%, rgba(4,17,26,.34) 62%, rgba(2,9,16,.7) 100%),
+      linear-gradient(to bottom, rgba(4,17,26,.34) 0%, rgba(4,17,26,0) 26%, rgba(4,17,26,0) 62%, rgba(2,9,16,.6) 100%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ============================================================
+     THE TRAIN  —  straight-line travel, no on-screen rotation
+     ============================================================ */
+  .train-stage{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden;}
+  .train{
+    position:absolute;left:50%;top:50%;
+    display:flex;align-items:flex-end;gap:15px;
+    will-change:transform;
+  }
+
+  .car,.loco{flex:0 0 auto;display:flex;flex-direction:column;}
+  .car{width:var(--car-w);}
+
+  .car-roof{
+    height:13px;margin:0 12px -1px;border-radius:9px 9px 0 0;
+    background:linear-gradient(180deg, rgba(158,212,219,.52), rgba(26,64,78,.9));
+  }
+  .car-body{
+    height:var(--car-h);border-radius:9px 9px 5px 5px;padding:13px;display:flex;
+    background:linear-gradient(180deg, rgba(19,50,62,.95), rgba(7,24,34,.97));
+    border:1px solid rgba(164,222,227,.3);
+    box-shadow:
+      inset 0 1px 0 rgba(216,246,249,.2),
+      0 26px 64px rgba(2,10,18,.55);
+  }
+  /* windows stay dark on the outbound run and light up on the return */
+  .car-window{
+    flex:1;border-radius:5px;padding:14px 17px;overflow:hidden;
+    display:flex;flex-direction:column;gap:.42rem;
+    opacity:var(--win-a, 1);
+    background:linear-gradient(165deg, rgba(31,72,87,.94), rgba(9,29,41,.97));
+    border:1px solid rgba(255,199,155,.32);
+    box-shadow:inset 0 0 34px rgba(255,170,112,.16), 0 0 16px rgba(255,170,112,.1);
+  }
+  .win-kicker{
+    font-family:var(--mono);font-size:.63rem;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--lamp);opacity:.84;
+  }
+  .car-window h3{font-size:1.26rem;line-height:1.14;}
+  .win-desc{color:var(--ink-dim);font-size:.83rem;line-height:1.5;}
+  .win-tags{display:flex;flex-wrap:wrap;gap:.32rem;margin-top:auto;}
+  .win-tags span{
+    font-family:var(--mono);font-size:.62rem;color:#9fc0c7;
+    border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:.2rem .52rem;
+  }
+  .win-note{font-family:var(--mono);font-size:.71rem;color:var(--accent);line-height:1.5;}
+
+  .trucks{display:flex;justify-content:space-between;padding:0 42px;}
+  .trucks span{
+    width:25px;height:25px;border-radius:50%;
+    background:radial-gradient(circle at 36% 32%, #6d9aa3, #081c24 72%);
+    border:1px solid rgba(184,228,233,.28);
+  }
+
+  /* --- locomotive: rides the right end, so it leads on the return run --- */
+  .loco{width:286px;}
+  .loco-stack{
+    height:44px;margin:0 0 -1px 26px;width:34px;border-radius:5px 5px 0 0;
+    background:linear-gradient(180deg, rgba(158,212,219,.5), rgba(22,58,72,.95));
+    border:1px solid rgba(164,222,227,.24);border-bottom:0;
+  }
+  .loco-body{
+    position:relative;height:var(--car-h);border-radius:9px 30px 5px 5px;
+    background:linear-gradient(180deg, rgba(22,56,70,.96), rgba(6,22,32,.98));
+    border:1px solid rgba(164,222,227,.32);
+    box-shadow:inset 0 1px 0 rgba(216,246,249,.22), 0 26px 64px rgba(2,10,18,.55);
+    display:flex;align-items:flex-start;padding:14px;
+  }
+  .cab-window{
+    width:92px;height:62px;border-radius:4px;
+    background:linear-gradient(160deg, rgba(255,214,160,.52), rgba(255,170,110,.18));
+    border:1px solid rgba(255,205,158,.44);
+    box-shadow:inset 0 0 22px rgba(255,190,130,.36);
+  }
+  .headlight{
+    position:absolute;right:9px;top:54%;width:15px;height:15px;border-radius:50%;
+    background:var(--lamp);
+    box-shadow:0 0 22px 9px rgba(255,211,154,.5), 0 0 74px 30px rgba(255,186,118,.2);
+  }
+  .loco .trucks{padding:0 30px;}
+
+  main{position:relative;z-index:5;}
+  main p,main h1,main h2,main h3,main span{text-shadow:var(--halo);}
+
+  /* ---------- sound control ---------- */
+  .sound-btn{
+    position:fixed;left:clamp(1rem,3vw,2.2rem);bottom:clamp(1rem,3vw,2.2rem);z-index:21;
+    font-family:var(--mono);font-size:.74rem;letter-spacing:.05em;color:var(--ink-dim);
+    border:1px solid var(--border);border-radius:999px;padding:.52rem 1rem;
+    background:rgba(8,26,36,.62);backdrop-filter:blur(10px);
+    transition:color .25s,border-color .25s,background .25s;
+  }
+  .sound-btn:hover{color:var(--ink);border-color:var(--accent);}
+  .sound-btn[hidden]{display:none;}
+
+  /* ---------- section rail ---------- */
+  .rail{
+    position:fixed;right:clamp(1rem,3vw,2.6rem);top:50%;transform:translateY(-50%);
+    z-index:20;display:flex;flex-direction:column;gap:1rem;align-items:center;
+  }
+  .rail-dot{width:14px;height:14px;display:flex;align-items:center;justify-content:center;}
+  .rail-dot span{
+    display:block;width:6px;height:6px;border-radius:50%;
+    background:rgba(255,255,255,.34);box-shadow:0 0 6px rgba(3,14,22,.9);
+    transition:background .35s var(--ease),transform .35s var(--ease),box-shadow .35s var(--ease);
+  }
+  .rail-dot:hover span{background:var(--ink-dim);}
+  .rail-dot.is-active span{background:var(--accent);transform:scale(1.7);box-shadow:0 0 14px rgba(255,143,107,.6);}
+  @media (max-width:860px){.rail{display:none;}}
+
+  /* ---------- scenes ---------- */
+  .scene{position:relative;}
+  .scene-inner{
+    position:sticky;top:0;min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;justify-content:center;gap:var(--sp-4);
+    padding:var(--sp-6) clamp(1.5rem,7vw,6.5rem);overflow:hidden;
+  }
+  #hero{height:170vh;}
+  #who{height:190vh;}
+  #gsoc{height:190vh;}
+  #writing{height:190vh;}
+  #sport{height:190vh;}
+  #made{height:620vh;}
+  #future{height:180vh;}
+
+  /* outbound run: the train owns the middle band, so copy sits beneath it */
+  #hero .scene-inner,
+  #who .scene-inner,
+  #gsoc .scene-inner,
+  #writing .scene-inner,
+  #sport .scene-inner{justify-content:flex-end;padding-bottom:8vh;}
+
+  /* return run: big lit windows own the middle, so the heading parks on top */
+  #made .scene-inner{justify-content:flex-start;padding-top:8vh;}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:var(--fs-eyebrow);letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);
+  }
+
+  /* ---------- scroll-scrub reveal engine ---------- */
+  .reveal{
+    --lp:clamp(0,calc((var(--p,0) - var(--from,0)) / max(0.0001,(var(--to,1) - var(--from,0)))),1);
+    opacity:var(--lp);
+  }
+  .reveal-up{transform:translateY(calc((1 - var(--lp)) * 30px));}
+  .reveal-out{opacity:calc(1 - var(--lp));}
+  .reveal-out-up{opacity:calc(1 - var(--lp));transform:translateY(calc(var(--lp) * -60px));}
+
+  /* ---------- hero ---------- */
+  .hero-inner{align-items:center;text-align:center;}
+  .sound-hint{
+    font-family:var(--mono);font-size:var(--fs-small);letter-spacing:.14em;
+    text-transform:uppercase;color:var(--lamp);opacity:.85;
+  }
+  .hero-title{font-size:var(--fs-hero);line-height:1.04;font-style:italic;font-weight:440;}
+  .hero-title .accent-text{
+    background:linear-gradient(100deg,var(--accent) 0%,var(--accent-3) 60%,var(--accent-2) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;
+  }
+  .lead{font-size:var(--fs-lead);color:var(--ink-dim);max-width:40ch;}
+  .scroll-hint{
+    font-family:var(--mono);font-size:var(--fs-small);color:var(--muted);letter-spacing:.05em;
+    position:absolute;bottom:var(--sp-4);left:0;right:0;text-align:center;
+  }
+
+  /* ---------- outbound copy blocks ---------- */
+  .block{display:flex;flex-direction:column;gap:.85rem;max-width:56ch;}
+  .block h2{font-size:var(--fs-h2);}
+  .block p{font-size:var(--fs-lead);color:var(--ink-dim);}
+  .block strong{color:var(--ink);font-weight:600;}
+  .tag-pill{
+    display:inline-flex;align-items:center;gap:.5rem;width:fit-content;
+    font-family:var(--mono);font-size:var(--fs-small);letter-spacing:.04em;
+    padding:.5rem 1rem;border-radius:999px;border:1px solid var(--border);
+    background:rgba(8,26,36,.55);backdrop-filter:blur(8px);color:var(--ink-dim);
+  }
+  .tag-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 8px var(--accent-2);}
+
+  .write-links{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:.3rem;}
+  .write-links a{
+    font-family:var(--mono);font-size:.8rem;color:var(--ink-dim);text-decoration:none;
+    border:1px solid var(--border);border-radius:999px;padding:.5rem 1rem;
+    background:rgba(8,26,36,.55);backdrop-filter:blur(8px);
+    transition:color .25s,border-color .25s,background .25s;
+  }
+  .write-links a:hover{color:var(--ink);border-color:var(--accent);background:var(--accent-soft);}
+
+  .sport-grid{display:flex;flex-wrap:wrap;gap:1.1rem 2.2rem;}
+  .sport-item{display:flex;align-items:center;gap:.7rem;}
+  .sport-item svg{width:26px;height:26px;flex:none;color:var(--accent);filter:drop-shadow(0 1px 8px rgba(3,14,22,.8));}
+  .sport-item span{font-family:var(--display);font-size:1.08rem;}
+
+  /* ---------- contact ---------- */
+  #contact{
+    min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;justify-content:center;gap:var(--sp-5);
+    padding:var(--sp-7) clamp(1.5rem,7vw,6.5rem);position:relative;z-index:5;
+  }
+  .observe-in{opacity:0;transform:translateY(24px);transition:opacity .9s var(--ease),transform .9s var(--ease);}
+  .observe-in.is-visible{opacity:1;transform:none;}
+  #contact h2{font-size:var(--fs-hero);font-style:italic;font-weight:460;}
+  .contact-email{
+    font-family:var(--mono);font-size:clamp(1.05rem,2.4vw,1.5rem);color:var(--accent);
+    text-decoration:none;border-bottom:1px solid var(--accent-soft);padding-bottom:.2rem;
+    width:fit-content;word-break:break-word;
+  }
+  .contact-email:hover{border-color:var(--accent);}
+  .contact-links{display:flex;flex-wrap:wrap;gap:.8rem;}
+  .contact-links a{
+    font-family:var(--mono);font-size:.85rem;color:var(--ink-dim);text-decoration:none;
+    border:1px solid var(--border);border-radius:999px;padding:.55rem 1.1rem;
+    background:rgba(8,26,36,.55);backdrop-filter:blur(8px);
+    transition:color .25s,border-color .25s,background .25s;
+  }
+  .contact-links a:hover{color:var(--ink);border-color:var(--accent);background:var(--accent-soft);}
+  .gitlab-note{font-family:var(--mono);font-size:.76rem;color:var(--muted);}
+  .gitlab-note a{color:var(--ink-dim);text-decoration:underline;text-decoration-color:var(--accent-soft);text-underline-offset:3px;}
+  .gitlab-note a:hover{color:var(--ink);}
+  .foot{font-family:var(--mono);font-size:.78rem;color:var(--muted);margin-top:var(--sp-4);}
+
+  @media (max-width:860px){
+    :root{--car-w:320px;--car-h:198px;}
+    .loco{width:220px;}
+  }
+  @media (max-width:640px){
+    .sport-grid{gap:.9rem 1.4rem;}
+  }
+
+  /* ---------- reduced motion: the train unfolds into a readable list ---------- */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;}
+    .scene{height:auto !important;}
+    .scene-inner{
+      position:relative !important;min-height:auto !important;overflow:visible !important;
+      justify-content:center !important;padding-top:var(--sp-6) !important;padding-bottom:var(--sp-6) !important;
+    }
+    .reveal,.reveal-up,.reveal-out,.reveal-out-up{opacity:1 !important;transform:none !important;}
+    .scroll-hint{display:none;}
+    .observe-in{opacity:1;transform:none;}
+    .train-stage{
+      position:static;z-index:auto;overflow:visible;
+      padding:0 clamp(1.5rem,7vw,6.5rem) var(--sp-6);
+    }
+    .train{position:static;transform:none !important;flex-direction:column;align-items:stretch;gap:var(--sp-4);}
+    .car,.loco{width:auto;}
+    .car-body{height:auto;}
+    .car-window{opacity:1 !important;}
+    .loco,.trucks,.car-roof,.loco-stack{display:none;}
+  }
+</style>
+
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div class="scrim" aria-hidden="true"></div>
+
+<div class="train-stage">
+  <section class="train" id="train" aria-label="Things I have made">
+    <!-- Laid out left-to-right in REVERSE reading order. The locomotive rides
+         the right end, so on the rightward return run it leads and the cars
+         reach centre in the intended order: OsteoVision first. -->
+
+    <article class="car">
+      <div class="car-roof"></div>
+      <div class="car-body"><div class="car-window">
+        <p class="win-kicker">Everything else</p>
+        <h3>More on GitHub</h3>
+        <p class="win-desc">15+ hackathons and counting — the rest live in the repo history.</p>
+        <p class="win-note">github.com/Naveeeya<br>gitlab.com/Naveeeya — GSoC work</p>
+      </div></div>
+      <div class="trucks"><span></span><span></span></div>
+    </article>
+
+    <article class="car">
+      <div class="car-roof"></div>
+      <div class="car-body"><div class="car-window">
+        <p class="win-kicker">Research · 2025 – present</p>
+        <h3>Dent-AI</h3>
+        <p class="win-desc">Automated tooth segmentation and FDI numbering on OPG X-rays. A four-pass ensemble over Mask R-CNN reaches 85–90% accuracy and cuts charting time under 10 seconds. Clinically validated with Bharati Vidyapeeth Dental College.</p>
+        <div class="win-tags"><span>Python</span><span>PyTorch</span><span>Detectron2</span><span>OpenCV</span></div>
+      </div></div>
+      <div class="trucks"><span></span><span></span></div>
+    </article>
+
+    <article class="car">
+      <div class="car-roof"></div>
+      <div class="car-body"><div class="car-window">
+        <p class="win-kicker">Hackathon project</p>
+        <h3>Narrative Constraint Detection</h3>
+        <p class="win-desc">An NLP system that identifies logical, ethical and narrative constraint violations in fictional text, using labeled data and classification pipelines.</p>
+        <div class="win-tags"><span>Python</span><span>NLP</span><span>ML</span></div>
+      </div></div>
+      <div class="trucks"><span></span><span></span></div>
+    </article>
+
+    <article class="car">
+      <div class="car-roof"></div>
+      <div class="car-body"><div class="car-window">
+        <p class="win-kicker">WeMakeDevs × Cognee 2026</p>
+        <h3>SafeRaste</h3>
+        <p class="win-desc">Women's route-safety memory platform — crowd-sourced street reports modeled as a time-bucketed knowledge graph, powering a live heatmap that decays stale reports and reweights routes by time of day.</p>
+        <div class="win-tags"><span>React</span><span>FastAPI</span><span>Cognee</span><span>Leaflet.js</span></div>
+      </div></div>
+      <div class="trucks"><span></span><span></span></div>
+    </article>
+
+    <article class="car">
+      <div class="car-roof"></div>
+      <div class="car-body"><div class="car-window">
+        <p class="win-kicker">Smart India Hackathon — Finalist</p>
+        <h3>GatiFlow</h3>
+        <p class="win-desc">AI-based traffic-signal optimization using Poisson-modeled density analysis on live video feeds — cut average wait time 40% across simulated urban traffic.</p>
+        <div class="win-tags"><span>Python</span><span>OpenCV</span><span>Flask</span></div>
+      </div></div>
+      <div class="trucks"><span></span><span></span></div>
+    </article>
+
+    <article class="car">
+      <div class="car-roof"></div>
+      <div class="car-body"><div class="car-window">
+        <p class="win-kicker">AesCode Nexus Hackathon 2026</p>
+        <h3>OsteoVision AI</h3>
+        <p class="win-desc">Multimodal osteoporosis screening — fused CNN image features with tabular clinical data for risk detection. 89.09% accuracy, 0.972 AUC-ROC.</p>
+        <div class="win-tags"><span>Python</span><span>PyTorch</span><span>EfficientNet-B0</span></div>
+      </div></div>
+      <div class="trucks"><span></span><span></span></div>
+    </article>
+
+    <div class="loco" aria-hidden="true">
+      <div class="loco-stack"></div>
+      <div class="loco-body">
+        <div class="cab-window"></div>
+        <div class="headlight"></div>
+      </div>
+      <div class="trucks"><span></span><span></span></div>
+    </div>
+  </section>
+</div>
+
+<div class="grain" aria-hidden="true"></div>
+
+<audio id="bgm" loop preload="auto"></audio>
+<button id="soundBtn" class="sound-btn" aria-pressed="false" hidden>♪ Turn on sound</button>
+
+<nav class="rail" aria-label="Section navigation">
+  <button class="rail-dot" data-target="hero" aria-label="Intro"><span></span></button>
+  <button class="rail-dot" data-target="who" aria-label="Who I am"><span></span></button>
+  <button class="rail-dot" data-target="gsoc" aria-label="What GSoC taught me"><span></span></button>
+  <button class="rail-dot" data-target="writing" aria-label="What I write"><span></span></button>
+  <button class="rail-dot" data-target="sport" aria-label="Sport"><span></span></button>
+  <button class="rail-dot" data-target="made" aria-label="Things I have made"><span></span></button>
+  <button class="rail-dot" data-target="future" aria-label="What's next"><span></span></button>
+  <button class="rail-dot" data-target="contact" aria-label="Contact"><span></span></button>
+</nav>
+
+<main>
+
+  <section id="hero" class="scene" data-pin>
+    <div class="scene-inner hero-inner">
+      <p class="sound-hint reveal reveal-out" id="soundHint" style="--from:0;--to:.3">Scroll to unmute</p>
+      <h1 class="hero-title reveal reveal-out-up" style="--from:0;--to:.55"><span class="accent-text">Navya's Journey</span></h1>
+      <p class="lead reveal reveal-out-up" style="--from:.02;--to:.46">Backend &amp; applied-ML engineer, building in the open.</p>
+      <p class="scroll-hint reveal reveal-out" style="--from:0;--to:.16">Scroll ↓</p>
+    </div>
+  </section>
+
+  <section id="who" class="scene" data-pin>
+    <div class="scene-inner">
+      <div class="block">
+        <p class="eyebrow reveal" style="--from:0;--to:.12">01 — Know me</p>
+        <h2 class="reveal reveal-up" style="--from:.02;--to:.26">I'm 21, and in my last year of college.</h2>
+        <p class="reveal reveal-up" style="--from:.18;--to:.44">B.Tech CSE at Bharati Vidyapeeth University, Pune — and I'm looking for new opportunities to get into, alongside looking at colleges for my master's.</p>
+        <p class="tag-pill reveal reveal-up" style="--from:.38;--to:.62">Open to opportunities</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="gsoc" class="scene" data-pin>
+    <div class="scene-inner">
+      <div class="block">
+        <p class="eyebrow reveal" style="--from:0;--to:.12">02 — What GSoC taught me</p>
+        <h2 class="reveal reveal-up" style="--from:.02;--to:.26">Google Summer of Code 2026, with GNU Mailman.</h2>
+        <p class="reveal reveal-up" style="--from:.18;--to:.44">At the Free Software Foundation, building the per-list backup and restore feature — my first real time inside a codebase far bigger than me.</p>
+        <p class="reveal reveal-up" style="--from:.34;--to:.6"><strong>Coming out of it, I understood what mentorship actually means.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="writing" class="scene" data-pin>
+    <div class="scene-inner">
+      <div class="block">
+        <p class="eyebrow reveal" style="--from:0;--to:.12">03 — I write, too</p>
+        <h2 class="reveal reveal-up" style="--from:.02;--to:.26">Two notebooks, kept separately.</h2>
+        <p class="reveal reveal-up" style="--from:.18;--to:.44">The technical one lives on Hashnode. The creative one lives on Medium.</p>
+        <div class="write-links reveal reveal-up" style="--from:.32;--to:.58">
+          <a href="https://hashnode.com/@naveeeya" target="_blank" rel="noopener">Hashnode — technical ↗</a>
+          <a href="https://medium.com/@knavya411" target="_blank" rel="noopener">Medium — creative ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sport" class="scene" data-pin>
+    <div class="scene-inner">
+      <div class="block">
+        <p class="eyebrow reveal" style="--from:0;--to:.12">04 — Off the screen</p>
+        <h2 class="reveal reveal-up" style="--from:.02;--to:.26">And I'm active in sport.</h2>
+        <div class="sport-grid">
+          <div class="sport-item reveal reveal-up" style="--from:.16;--to:.38">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="16.5" cy="7.5" rx="4" ry="5.2" transform="rotate(45 16.5 7.5)"/><path d="M13 11L4.5 19.5"/><path d="M3 21l2-2"/></svg>
+            <span>Badminton</span>
+          </div>
+          <div class="sport-item reveal reveal-up" style="--from:.24;--to:.46">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 15c2 0 2-1.6 4-1.6s2 1.6 4 1.6 2-1.6 4-1.6 2 1.6 4 1.6 2-1.6 4-1.6"/><path d="M2 20c2 0 2-1.6 4-1.6s2 1.6 4 1.6 2-1.6 4-1.6 2 1.6 4 1.6 2-1.6 4-1.6"/><circle cx="16" cy="6" r="2"/><path d="M6 10l4-2 4 3"/></svg>
+            <span>Swimming</span>
+          </div>
+          <div class="sport-item reveal reveal-up" style="--from:.32;--to:.54">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="14" cy="4.5" r="2"/><path d="M9 21l2.5-6L8 12l1.5-4.5L13 9l3 1.5"/><path d="M9.5 7.5L6 9"/><path d="M11.5 15l3.5 2 1 4"/></svg>
+            <span>Running</span>
+          </div>
+          <div class="sport-item reveal reveal-up" style="--from:.4;--to:.62">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21L11 3l7 18"/><path d="M8.5 12h5"/><path d="M6.2 17h3.4"/><path d="M14 17h3.6"/></svg>
+            <span>Climbing — indoors, for now</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="made" class="scene" data-pin>
+    <div class="scene-inner">
+      <div class="block reveal reveal-up" style="--from:0;--to:.04">
+        <p class="eyebrow">05 — Things I have made</p>
+        <h2>Every window is something I shipped.</h2>
+      </div>
+    </div>
+  </section>
+
+  <section id="future" class="scene" data-pin>
+    <div class="scene-inner">
+      <div class="block">
+        <p class="eyebrow reveal" style="--from:0;--to:.12">06 — What's next</p>
+        <h2 class="reveal reveal-up" style="--from:.02;--to:.28">I want more of this.</h2>
+        <p class="reveal reveal-up" style="--from:.2;--to:.46">More work like GSoC, more time inside codebases bigger than I am — especially real-world ML in medical imaging, where a better model means someone gets diagnosed sooner.</p>
+        <p class="reveal reveal-up" style="--from:.36;--to:.62">If that sounds like a team you're building, I'd like to talk.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <p class="eyebrow observe-in">07 — Contact</p>
+    <h2 class="observe-in">Say hello.</h2>
+    <a class="contact-email observe-in" href="mailto:navyakhanna140@gmail.com">navyakhanna140@gmail.com</a>
+    <div class="contact-links observe-in">
+      <a href="https://github.com/Naveeeya" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/navyakhannaaa" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://hashnode.com/@naveeeya" target="_blank" rel="noopener">Hashnode</a>
+      <a href="https://medium.com/@knavya411" target="_blank" rel="noopener">Medium</a>
+    </div>
+    <p class="gitlab-note observe-in">My GSoC work lives alongside it on <a href="https://gitlab.com/Naveeeya" target="_blank" rel="noopener">gitlab.com/Naveeeya</a></p>
+    <p class="foot observe-in">Navya Khanna · Pune, India</p>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   shared scroll state
+   ============================================================ */
+var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var gp = 0, vel = 0, lastY = window.scrollY;
+
+function clamp01(v){ return v<0?0:v>1?1:v; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function sm(t){ t=clamp01(t); return t*t*(3-2*t); }
+
+function readScroll(){
+  var max = document.documentElement.scrollHeight - window.innerHeight;
+  var y = window.scrollY;
+  gp = max > 0 ? clamp01(y/max) : 0;
+  vel = y - lastY;
+  lastY = y;
+}
+
+/* ============================================================
+   audio — Navya's track goes here.
+   The artifact CSP blocks every external host, so this MUST be an
+   embedded data URI ("data:audio/mpeg;base64,....."), never a link.
+   ============================================================ */
+var AUDIO_SRC = '';
+
+(function(){
+  var audio = document.getElementById('bgm');
+  var btn   = document.getElementById('soundBtn');
+  var hint  = document.getElementById('soundHint');
+  if (!audio || !btn) return;
+
+  if (!AUDIO_SRC){
+    if (hint) hint.textContent = 'Scroll to begin';   // don't promise sound we can't play
+    return;
+  }
+
+  audio.src = AUDIO_SRC;
+  audio.volume = 0;
+  var wanted = false, tried = false;
+
+  function fade(to, ms){
+    var from = audio.volume, t0 = performance.now();
+    (function step(){
+      var k = clamp01((performance.now()-t0)/ms);
+      audio.volume = lerp(from, to, k);
+      if (k < 1) requestAnimationFrame(step);
+    })();
+  }
+  function setBtn(on){
+    btn.hidden = false;
+    btn.textContent = on ? '♪ Sound on' : '♪ Turn on sound';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function start(){
+    wanted = true;
+    var p = audio.play();
+    if (p && p.then){
+      p.then(function(){
+        fade(0.55, 1400); setBtn(true);
+        if (hint) hint.textContent = 'Sound on ♪';
+      }).catch(function(){
+        setBtn(false);   // Chrome needs a real click; a scroll is not enough
+        if (hint) hint.textContent = 'Click ♪ for sound';
+      });
+    }
+  }
+
+  window.addEventListener('scroll', function once(){
+    if (tried) return;
+    tried = true;
+    window.removeEventListener('scroll', once);
+    start();
+  }, {passive:true});
+
+  btn.addEventListener('click', function(){
+    if (audio.paused || !wanted) start();
+    else {
+      wanted = false; fade(0, 400);
+      setTimeout(function(){ if(!wanted) audio.pause(); }, 420);
+      setBtn(false);
+    }
+  });
+})();
+
+/* ============================================================
+   section reveals + rail
+   ============================================================ */
+(function(){
+  var scenes = [].slice.call(document.querySelectorAll('.scene[data-pin]'));
+  var ticking = false;
+
+  function update(){
+    var vh = window.innerHeight;
+    for (var i=0;i<scenes.length;i++){
+      var s = scenes[i], rect = s.getBoundingClientRect();
+      var total = rect.height - vh;
+      s.style.setProperty('--p', clamp01(total > 0 ? (-rect.top)/total : 0).toFixed(4));
+    }
+    ticking = false;
+  }
+  function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
+
+  if (!REDUCE){
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    update();
+  } else {
+    scenes.forEach(function(s){ s.style.setProperty('--p','1'); });
+  }
+
+  var io = new IntersectionObserver(function(en){
+    en.forEach(function(e){ if (e.isIntersecting) e.target.classList.add('is-visible'); });
+  }, {threshold:.15});
+  document.querySelectorAll('.observe-in').forEach(function(el){ io.observe(el); });
+
+  var dots = [].slice.call(document.querySelectorAll('.rail-dot'));
+  var targets = dots.map(function(d){ return document.getElementById(d.dataset.target); });
+  dots.forEach(function(d){
+    d.addEventListener('click', function(){
+      var t = document.getElementById(d.dataset.target);
+      if (t) t.scrollIntoView({behavior: REDUCE ? 'auto' : 'smooth', block:'start'});
+    });
+  });
+  function rail(){
+    var mid = window.scrollY + window.innerHeight/2, active = 0;
+    for (var i=0;i<targets.length;i++) if (targets[i] && targets[i].offsetTop <= mid) active = i;
+    for (var j=0;j<dots.length;j++) dots[j].classList.toggle('is-active', j===active);
+  }
+  window.addEventListener('scroll', function(){ requestAnimationFrame(rail); }, {passive:true});
+  window.addEventListener('resize', rail);
+  rail();
+})();
+
+/* ============================================================
+   the journey: straight-line train + track + starfield
+
+   OUTBOUND   gp 0    -> 0.515   right to left, mirrored (nose leads
+                                 left), windows dark, train small/far
+   THE TURN   gp 0.515-> 0.545   entirely off-frame to the left
+   RETURN     gp 0.545-> 0.90    left to right, nose leads right,
+                                 windows lit, train large/near — one
+                                 project centres at a time
+   AFTER      gp 0.90 -> 1       gone; open starfield
+   ============================================================ */
+(function(){
+  var train = document.getElementById('train');
+  var cv = document.getElementById('bgCanvas');
+  if (!cv || !train) return;
+  var ctx = cv.getContext('2d', {alpha:false});
+  if (!ctx) return;
+
+  var TAU = Math.PI*2;
+  var W=0, H=0, DPR=1, small=false;
+  var stars=[], nebulae=[];
+  var TW=0, TH=0;
+
+  var T1_END = 0.515, T2_START = 0.545, T2_END = 0.90;
+  var PH1_S = 0.34, PH2_S = 0.95;      // far vs. near
+  var PH1_Y = 0.44, PH2_Y = 0.50;      // the track sits lower when it's closer
+
+  function rng(seed){
+    return function(){
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function buildField(){
+    var r = rng(77712);
+    var n = small ? 170 : 320;
+    stars = [];
+    for (var i=0;i<n;i++){
+      stars.push({
+        ax:(r()-0.5)*2.4, ay:(r()-0.5)*2.4,
+        z: 0.25 + r()*3.6, r: 0.5 + r()*1.5, tw: r()*TAU,
+        h: r()<0.16 ? 190+r()*60 : 45+r()*20,
+        sat: r()<0.16 ? 45 : 15
+      });
+    }
+    nebulae = [];
+    var m = small ? 3 : 4;
+    for (var k=0;k<m;k++){
+      nebulae.push({
+        x:(r()-0.5)*1.5, y:(r()-0.5)*1.4,
+        rad: 0.35 + r()*0.5,
+        h: [196,208,268,336][k%4],
+        a: 0.08 + r()*0.1, ph: r()*TAU
+      });
+    }
+  }
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+    W = window.innerWidth; H = window.innerHeight;
+    small = W < 860;
+    cv.width = Math.max(1, Math.round(W*DPR));
+    cv.height = Math.max(1, Math.round(H*DPR));
+    cv.style.width = W+'px'; cv.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    buildField();
+    TW = train.offsetWidth || 2800;
+    TH = train.offsetHeight || 244;
+    step();
+  }
+
+  /* ---- where the train is, and which way it faces ---- */
+  function trainState(p){
+    var s, y, flip, winA, op, x, TWs;
+
+    if (p <= T1_END){                       // OUTBOUND: right -> left
+      s = PH1_S; y = PH1_Y; flip = -1; winA = 0; op = 1;
+      TWs = TW*s;
+      var x0 = 0.12*W + TWs/2;              // nose ~62% across, body running off-frame right
+      var x1 = -(W/2) - TWs/2 - 60;         // completely clear of the left edge
+      x = lerp(x0, x1, sm(p/T1_END));
+    } else if (p < T2_START){               // THE TURN: off-frame
+      s = PH2_S; y = PH2_Y; flip = 1; winA = 1; op = 0;
+      x = -(W/2) - (TW*s)/2 - 240;
+    } else if (p <= T2_END){                // RETURN: left -> right
+      s = PH2_S; y = PH2_Y; flip = 1; winA = 1; op = 1;
+      TWs = TW*s;
+      x = lerp(-(W/2) - TWs/2, (W/2) + TWs/2, (p-T2_START)/(T2_END-T2_START));
+    } else {                                // gone
+      s = PH2_S; y = PH2_Y; flip = 1; winA = 1; op = 0;
+      x = (W/2) + (TW*s)/2 + 240;
+    }
+    return {x:x, y:y, s:s, flip:flip, winA:winA, op:op};
+  }
+
+  /* ---- the track is continuous, so its geometry eases across the turn ---- */
+  function trackState(p){
+    var k = sm(clamp01((p - T1_END)/(T2_START - T1_END)));
+    var s = lerp(PH1_S, PH2_S, k);
+    var y = lerp(PH1_Y, PH2_Y, k);
+    var a;
+    if (p < 0.02)          a = sm(p/0.02) * 0.42;
+    else if (p <= T1_END)  a = 0.42;
+    else if (p < T2_START) a = lerp(0.42, 0.8, k);
+    else if (p <= T2_END)  a = 0.8;
+    else                   a = lerp(0.8, 0.1, sm((p-T2_END)/(1-T2_END)));
+    return {y: y*H + (TH/2 - 13)*s, s:s, a:a};
+  }
+
+  function applyTrain(st){
+    train.style.transform =
+      'translate(-50%,-50%) translate3d(' + st.x.toFixed(1) + 'px,' +
+      ((st.y - 0.5)*H).toFixed(1) + 'px,0) scale(' +
+      (st.s*st.flip).toFixed(4) + ',' + st.s.toFixed(4) + ')';
+    train.style.opacity = st.op.toFixed(3);
+    train.style.setProperty('--win-a', st.winA.toFixed(3));
+  }
+
+  /* ---- painters ---- */
+  function drawGround(){
+    var t = sm(clamp01((gp-0.2)/0.6));
+    var g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'rgb('+(lerp(11,7,t)|0)+','+(lerp(39,20,t)|0)+','+(lerp(51,48,t)|0)+')');
+    g.addColorStop(1,'rgb('+(lerp(5,2,t)|0)+','+(lerp(20,8,t)|0)+','+(lerp(31,18,t)|0)+')');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  function drawNebulae(t){
+    var a = sm(clamp01((gp-0.25)/0.5));
+    if (a <= 0.001) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    for (var i=0;i<nebulae.length;i++){
+      var n = nebulae[i];
+      var drift = Math.sin(t*0.00006 + n.ph)*0.06;
+      var cxp = W*0.5 + (n.x+drift)*W*0.5;
+      var cyp = H*0.5 + (n.y-drift*0.6)*H*0.5;
+      var rad = n.rad * Math.max(W,H) * (0.55 + a*0.5);
+      var g = ctx.createRadialGradient(cxp,cyp,0,cxp,cyp,rad);
+      g.addColorStop(0,'hsla('+n.h+',62%,52%,'+(n.a*a).toFixed(3)+')');
+      g.addColorStop(0.55,'hsla('+n.h+',58%,40%,'+(n.a*a*0.4).toFixed(3)+')');
+      g.addColorStop(1,'hsla('+n.h+',55%,30%,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(cxp-rad, cyp-rad, rad*2, rad*2);
+    }
+    ctx.restore();
+  }
+
+  var flow = 0;
+  function drawStars(t){
+    flow += (Math.abs(vel)*0.0022 + 0.0016);
+    var reveal = 0.4 + 0.6*sm(clamp01((gp-0.08)/0.55));
+    var focal = Math.max(W,H)*0.62;
+    for (var i=0;i<stars.length;i++){
+      var s = stars[i];
+      var z = s.z - flow;
+      z = z - Math.floor(z/3.85)*3.85;
+      if (z < 0.12) z = 0.12;
+      var k = focal/z;
+      var x = W*0.5 + s.ax*k, y = H*0.5 + s.ay*k;
+      if (x < -40 || x > W+40 || y < -40 || y > H+40) continue;
+      var depth = 1 - z/3.85;
+      var tw = 0.6 + 0.4*Math.sin(t*0.0012 + s.tw);
+      var a = reveal * (0.18 + depth*0.82) * tw;
+      if (a <= 0.01) continue;
+      var rr = s.r * (0.5 + depth*1.6);
+      ctx.fillStyle = 'hsla('+s.h+','+s.sat+'%,'+(84+depth*12)+'%,'+a.toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(x,y,rr,0,TAU); ctx.fill();
+      if (rr > 1.6 && a > 0.5){
+        ctx.globalAlpha = a*0.26;
+        ctx.beginPath(); ctx.arc(x,y,rr*3.2,0,TAU); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  /* a straight, level track spanning the full width — the ground is
+     still, the train moves along it */
+  function drawTrack(tk, st){
+    var a = tk.a;
+    if (a <= 0.012) return;
+
+    var gauge   = Math.max(3, 17*tk.s);
+    var y1 = tk.y, y2 = tk.y + gauge;
+    var sleepW  = Math.max(1.6, 7*tk.s);
+    var stepPx  = Math.max(10, 54*tk.s);
+    var over    = Math.max(2, 7*tk.s);
+
+    // ballast bed
+    var top = y1 - gauge*1.7, bot = y2 + gauge*2.5;
+    var bg = ctx.createLinearGradient(0, top, 0, bot);
+    bg.addColorStop(0,'rgba(9,29,38,0)');
+    bg.addColorStop(0.5,'rgba(11,34,44,'+(a*0.55).toFixed(3)+')');
+    bg.addColorStop(1,'rgba(6,20,28,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, top, W, bot-top);
+
+    // light the train spills onto the rails
+    if (st.op > 0.05){
+      var cxp = W*0.5 + st.x;
+      var halfw = Math.max(60, (TW*st.s)/2);
+      var lg = ctx.createRadialGradient(cxp, y1, 0, cxp, y1, halfw);
+      lg.addColorStop(0,'rgba(255,186,124,'+(0.2*st.op).toFixed(3)+')');
+      lg.addColorStop(1,'rgba(255,186,124,0)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(cxp-halfw, top, halfw*2, bot-top);
+    }
+
+    // sleepers
+    ctx.fillStyle = 'rgba(140,188,200,'+(a*0.4).toFixed(3)+')';
+    for (var x = -stepPx; x < W+stepPx; x += stepPx){
+      ctx.fillRect(x, y1-over, sleepW, (y2-y1)+over*2);
+    }
+
+    // the two rails, fading out at both edges
+    var rg = ctx.createLinearGradient(0,0,W,0);
+    rg.addColorStop(0,   'rgba(206,238,244,0)');
+    rg.addColorStop(0.12,'rgba(206,238,244,'+(a*0.92).toFixed(3)+')');
+    rg.addColorStop(0.88,'rgba(206,238,244,'+(a*0.92).toFixed(3)+')');
+    rg.addColorStop(1,   'rgba(206,238,244,0)');
+    ctx.strokeStyle = rg;
+    ctx.lineWidth = Math.max(1, 2.6*tk.s);
+    ctx.beginPath(); ctx.moveTo(0,y1); ctx.lineTo(W,y1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,y2); ctx.lineTo(W,y2); ctx.stroke();
+  }
+
+  function step(){
+    var st = trainState(gp), tk = trackState(gp);
+    // in reduced motion the train is a static list — never drive its opacity
+    if (!REDUCE) applyTrain(st);
+    var t = REDUCE ? 0 : performance.now();
+    drawGround();
+    drawNebulae(t);
+    drawStars(t);
+    drawTrack(tk, st);
+  }
+
+  /* ---- boot ---- */
+  readScroll();
+  resize();
+  window.addEventListener('resize', resize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+
+  if (REDUCE){
+    window.addEventListener('scroll', function(){
+      readScroll();
+      requestAnimationFrame(step);
+    }, {passive:true});
+  } else {
+    window.addEventListener('scroll', readScroll, {passive:true});
+    (function frame(){ vel *= 0.9; step(); requestAnimationFrame(frame); })();
+  }
+})();
+</script>
